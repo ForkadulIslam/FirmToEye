@@ -86,4 +86,16 @@ export class AuthService {
     return null;
   }
 
+  async validateOtp(phone: string, otp: string): Promise<any> {
+    const userVerification = await this.prisma.phoneVerification.findFirst({
+      where: { phone }
+    });
+    if (userVerification && await bcrypt.compare(otp, userVerification.verificationCode)) {
+      return userVerification;
+    }
+    return null;
+  }
+
+
+
 }

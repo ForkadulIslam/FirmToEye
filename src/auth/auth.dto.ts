@@ -23,3 +23,12 @@ export class SessionDto {
   @Field()
   lastSeen: Date;
 }
+
+@ObjectType()
+export class VerificationDto {
+  @Field()
+  phone: string;
+
+  @Field()
+  verificationCode: string;
+}
