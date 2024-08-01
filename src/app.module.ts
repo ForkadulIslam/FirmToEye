@@ -10,6 +10,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { SharedModule } from './shared/shared.module';
 import { AuthModule } from './auth/auth.module';
 import { UserResolver } from './user.resolver';
+import { CropModule } from './crop/crop.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { UserResolver } from './user.resolver';
     }),
     SharedModule,
     AuthModule,
+    CropModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService, UserResolver], // Register the resolver here

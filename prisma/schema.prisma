@@ -53,14 +53,20 @@ model PhoneVerification {
 }
 
 model Crop {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  title String
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  varieties Variety[] @relation("CropVarieties")
+
   @@map("crops")
 }
 
 model Variety {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  title String
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  varietyId String
+  crop      Crop   @relation(fields: [cropId], references: [id], name: "CropVarieties", onDelete: Cascade)
+  cropId    String @db.ObjectId
+
   @@map("varieties")
 }
 
