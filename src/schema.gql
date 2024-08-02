@@ -6,13 +6,31 @@ type AuthDto {
   accessToken: String!
 }
 
+type Variety {
+  id: ID!
+  title: String!
+  varietyId: String!
+}
+
+type Crop {
+  id: ID!
+  title: String!
+  varieties: [Variety!]!
+}
+
 type Query {
   sayHello: String!
+  getAllCrops: [Crop!]!
+  getCrop(id: ID!): Crop
 }
 
 type Mutation {
   registerUser(registerInstitutionDto: UserRegistrationDto!): AuthDto!
   login(loginDto: UserLoginDto!): AuthDto!
+  createCrop(data: CreateCropDto!): Crop!
+  updateCrop(data: UpdateCropDto!): Crop!
+  deleteCrop(id: ID!): Crop!
+  deleteVariety(id: ID!): Variety!
 }
 
 input UserRegistrationDto {
@@ -25,4 +43,26 @@ input UserRegistrationDto {
 input UserLoginDto {
   email: String!
   password: String!
+}
+
+input CreateCropDto {
+  title: String!
+  varieties: [CreateVarietyDto!]!
+}
+
+input CreateVarietyDto {
+  title: String!
+  varietyId: String
+}
+
+input UpdateCropDto {
+  id: ID!
+  title: String
+  varieties: [UpdateVarietyDto]
+}
+
+input UpdateVarietyDto {
+  id: ID!
+  title: String!
+  varietyId: String
 }

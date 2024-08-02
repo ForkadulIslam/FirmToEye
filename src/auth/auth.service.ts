@@ -73,7 +73,6 @@ export class AuthService {
         email: data.email,
       },
     });
-
     return this.login(user);
   }
 
