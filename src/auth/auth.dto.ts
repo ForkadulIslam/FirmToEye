@@ -32,3 +32,11 @@ export class VerificationDto {
   @Field()
   verificationCode: string;
 }
+
+
+@ObjectType()
+export class sendOtp {
+  @Field()
+  phone: String;
+
+}

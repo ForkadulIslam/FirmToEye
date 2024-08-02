@@ -38,4 +38,13 @@ export class AuthResolver {
     return this.authService.login(user);
   }
 
+  async sendOtp(@Args('sendotp') phone: string,
+  ): Promise<AuthDto> {
+    const user = await this.authService.sendOtp({phone});
+    if (!user) {
+      throw new Error('Otp sent');
+    }
+    return this.authService.login(user);
+  }
+
 }

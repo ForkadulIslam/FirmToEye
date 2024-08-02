@@ -25,5 +25,10 @@ export class AuthController {
     //return this.authService.createUser(createUserDto.email, createUserDto.password);
   }
 
+  @Post('sendOtp')
+  async sendOtp(@Body()  phone: string) {
+    return this.authService.sendOtp({phone});
+  }
+
   
 }

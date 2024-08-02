@@ -9,10 +9,11 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthDto } from './auth.dto';
+import { AuthDto, sendOtp } from './auth.dto';
 import { UserRegistrationDto } from './register.dto';
-import { UserType } from '@prisma/client';
+import { PhoneVerification, UserType } from '@prisma/client';
 import { valid } from 'joi';
+import { randomInt } from 'crypto';
 
 
 @Injectable()
@@ -98,4 +99,35 @@ export class AuthService {
 
 
 
+  async sendOtp(inputData: { phone: string }) {
+    const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+  
+    const user = await this.prisma.phoneVerification.create({
+      data: {
+        phone: inputData.phone,
+        verificationCode: generateSecureOTP(),
+        verificationExpiry: verificationExpiry,
+        user: {
+          connect: {
+            phone: inputData.phone
+          }
+        }
+      },
+    });
+  
+    return user;
+  }
+
+
+}
+function generateSecureOTP() {
+  const characters = '0123456789';
+  let otp = '';
+
+  for (let i = 0; i < 6; i++) {
+      const randomIndex = randomInt(0, characters.length);
+      otp += characters[randomIndex];
+  }
+
+  return otp;
 }
