@@ -1,7 +1,7 @@
 // src/crop/crop.resolver.ts
-import { Resolver, Mutation, Args, Query, ID } from '@nestjs/graphql';
+import { Resolver, Mutation, Args, Query, ID, Context } from '@nestjs/graphql';
 import { CropService } from './crop.service';
-import { CreateCropDto } from './dto/create-crop.dto';
+import { CreateCropDto, CreateVarietyDto } from './dto/create-crop.dto';
 import { Crop } from './models/crop.model';
 import { UpdateCropDto } from './dto/update-crop.dto';
 import { Variety } from './models/variety.model';
@@ -40,4 +40,13 @@ export class CropResolver {
     return this.cropService.deleteVariety(id);
   }
 
+  @Mutation(() => Variety)
+  async createVariety(@Args('data') data: CreateVarietyDto, cropid:string) {
+    return this.cropService.createVariety (data, cropid);
+  }
+  @Query(() => Boolean)
+  async gettest( @Context() abc:any) {
+    console.log("qwertyu", abc.rollnumber)
+    return true;
+  }
 }

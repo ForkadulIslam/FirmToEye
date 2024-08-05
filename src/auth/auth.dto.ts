@@ -40,3 +40,13 @@ export class sendOtp {
   phone: String;
 
 }
+
+@ObjectType()
+export class dummyloginDto {
+  @Field()
+  name: String;
+
+  @Field()
+  password: String;
+
+}

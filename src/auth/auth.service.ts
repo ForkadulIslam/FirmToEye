@@ -93,7 +93,12 @@ export class AuthService {
     if (userVerification && await bcrypt.compare(otp, userVerification.verificationCode)) {
       return userVerification;
     }
-    return null;
+    if (userVerification.userId === undefined || userVerification.userId === null) {
+        return "User not found"
+    }
+    else {
+      return "User already Exists"
+    }
   }
 
 
@@ -116,9 +121,9 @@ export class AuthService {
   
     return user;
   }
-
-
+  
 }
+
 function generateSecureOTP() {
   const characters = '0123456789';
   let otp = '';

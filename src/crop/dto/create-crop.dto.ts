@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 import { InputType, Field } from '@nestjs/graphql';
 
 @InputType()
-class CreateVarietyDto {
+export class CreateVarietyDto {
   @Field()
   @IsString()
   @IsNotEmpty({ message: 'Variety title should not be empty' })

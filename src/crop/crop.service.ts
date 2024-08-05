@@ -1,7 +1,7 @@
 // src/crop/crop.service.ts
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCropDto } from './dto/create-crop.dto';
+import { CreateCropDto, CreateVarietyDto } from './dto/create-crop.dto';
 import { UpdateCropDto } from './dto/update-crop.dto';
 import { ObjectId } from 'mongodb';
 
@@ -130,5 +130,33 @@ export class CropService {
       where: { id: varietyId },
     });
   }
+
+  async createVariety(data: CreateVarietyDto, cropId: string) {
+    try {
+      const { title, varietyId } = data;
+  
+      // Create variety
+      const variety = await this.prisma.variety.create({
+        data: {
+          title: title,
+          varietyId: varietyId, // Optional field
+          crop: {
+            connect: { id: cropId }, // Linking to an existing crop
+          },
+        },
+        include: {
+          crop: true, // Fetch related crop details
+        },
+      });
+  
+      return variety;
+    } catch (error) {
+      console.error('Error creating variety:', error);
+      throw new Error('Could not create variety. Please try again later.');
+    }
+  }
+  
+  
+  
 
 }
