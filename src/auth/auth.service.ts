@@ -112,32 +112,30 @@ export class AuthService {
     const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
   
     return this.prisma.$transaction(async (prisma) => {
-      // Step 1: Find or create the user
       let user = await prisma.user.findUnique({
         where: { phone: inputData.phone },
       });
   
-      if (!user) {
-        const tempUsername = `user_${Math.random().toString(36).substr(2, 9)}`;
-        const tempEmail = `${tempUsername}@example.com`;
-        const tempPassword = Math.random().toString(36).substr(2, 15);
+      // if (!user) {
+      //   const tempUsername = `user_${Math.random().toString(36).substr(2, 9)}`;
+      //   const tempEmail = `${tempUsername}@example.com`;
+      //   const tempPassword = Math.random().toString(36).substr(2, 15);
   
-        user = await prisma.user.create({
-          data: {
-            phone: inputData.phone,
-            userName: tempUsername,
-            email: tempEmail,
-            password: tempPassword,
-          },
-        });
-      }
+      //   user = await prisma.user.create({
+      //     data: {
+      //       phone: inputData.phone,
+      //       userName: tempUsername,
+      //       email: tempEmail,
+      //       password: tempPassword,
+      //     },
+      //   });
+      // }
   
       let phoneVerification = await prisma.phoneVerification.findUnique({
         where: { phone: inputData.phone },
       });
   
       if (phoneVerification) {
-        // If the record exists, update it
         phoneVerification = await prisma.phoneVerification.update({
           where: { phone: inputData.phone },
           data: {
@@ -152,9 +150,6 @@ export class AuthService {
             phone: inputData.phone,
             verificationCode: generateSecureOTP(),
             verificationExpiry: verificationExpiry,
-            user: {
-              connect: { id: user.id }
-            }
           },
           include: { user: true },
         });
