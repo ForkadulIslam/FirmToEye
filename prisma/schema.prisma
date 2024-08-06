@@ -81,6 +81,6 @@ model CropField {
 }
 
 type Coordinate {
-  latitude  Float
-  longitude Float
+  latitude  String
+  longitude String
 }
