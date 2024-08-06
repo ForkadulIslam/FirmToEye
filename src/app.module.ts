@@ -11,6 +11,7 @@ import { SharedModule } from './shared/shared.module';
 import { AuthModule } from './auth/auth.module';
 import { UserResolver } from './user.resolver';
 import { CropModule } from './crop/crop.module';
+// import {extractBearerToken} from './auth/guards/gql-auth.guard'
 
 @Module({
   imports: [
@@ -27,6 +28,9 @@ import { CropModule } from './crop/crop.module';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       playground: true,
+      // context: ({ raw }) => {
+      //   return { authToken: extractBearerToken(raw.headers) };
+      // },
     }),
     SharedModule,
     AuthModule,

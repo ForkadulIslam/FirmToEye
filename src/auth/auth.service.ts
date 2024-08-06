@@ -4,15 +4,17 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthDto } from './auth.dto';
+import { AuthDto, sendOtp } from './auth.dto';
 import { UserRegistrationDto } from './register.dto';
-import { UserType } from '@prisma/client';
+import { PhoneVerification, UserType } from '@prisma/client';
 import { valid } from 'joi';
+import { randomInt } from 'crypto';
 
 
 @Injectable()
@@ -85,4 +87,88 @@ export class AuthService {
     return null;
   }
 
+  async validateOtp(phone: string, otp: string): Promise<string> {
+    const userVerification = await this.prisma.phoneVerification.findFirst({
+      where: { phone: phone }
+    });
+    if (!userVerification) {
+      throw new NotFoundException('No valid verification found for this phone number');
+    }
+    if (otp !== userVerification.verificationCode) {
+      throw new UnauthorizedException('Invalid OTP');
+    }
+    if (userVerification.verificationExpiry < new Date()) {
+      throw new UnauthorizedException('OTP has expired');
+    }
+    if (!userVerification.userId) {
+      throw new NotFoundException('User not found');
+    }
+    return 'OTP verified successfully';
+  }
+  
+
+
+  async sendOtp(inputData: { phone: string }) {
+    const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+  
+    return this.prisma.$transaction(async (prisma) => {
+      let user = await prisma.user.findUnique({
+        where: { phone: inputData.phone },
+      });
+  
+      // if (!user) {
+      //   const tempUsername = `user_${Math.random().toString(36).substr(2, 9)}`;
+      //   const tempEmail = `${tempUsername}@example.com`;
+      //   const tempPassword = Math.random().toString(36).substr(2, 15);
+  
+      //   user = await prisma.user.create({
+      //     data: {
+      //       phone: inputData.phone,
+      //       userName: tempUsername,
+      //       email: tempEmail,
+      //       password: tempPassword,
+      //     },
+      //   });
+      // }
+  
+      let phoneVerification = await prisma.phoneVerification.findUnique({
+        where: { phone: inputData.phone },
+      });
+  
+      if (phoneVerification) {
+        phoneVerification = await prisma.phoneVerification.update({
+          where: { phone: inputData.phone },
+          data: {
+            verificationCode: generateSecureOTP(),
+            verificationExpiry: verificationExpiry,
+          },
+          include: { user: true },
+        });
+      } else {
+        phoneVerification = await prisma.phoneVerification.create({
+          data: {
+            phone: inputData.phone,
+            verificationCode: generateSecureOTP(),
+            verificationExpiry: verificationExpiry,
+          },
+          include: { user: true },
+        });
+      }
+  
+      return phoneVerification;
+    });
+  }
+  
+ 
+}
+function generateSecureOTP() {
+  const characters = '0123456789';
+  let otp = '';
+
+  for (let i = 0; i < 6; i++) {
+      const randomIndex = randomInt(0, characters.length);
+      otp += characters[randomIndex];
+  }
+
+  return otp;
 }
