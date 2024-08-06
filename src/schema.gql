@@ -10,7 +10,7 @@ type sendOtp {
   phone: String!
 }
 
-type dummyloginDto {
+type dummylogin {
   name: String!
   password: String!
 }
@@ -37,8 +37,9 @@ type Query {
 type Mutation {
   registerUser(registerInstitutionDto: UserRegistrationDto!): AuthDto!
   login(loginDto: UserLoginDto!): AuthDto!
+  otpVerification(VerificationInputDto: VerificationInputDto!): String!
   sendOtp(phone: String!): sendOtp!
-  dummyLogin: dummyloginDto!
+  dummyLogin: dummylogin!
   createCrop(data: CreateCropDto!): Crop!
   updateCrop(data: UpdateCropDto!): Crop!
   deleteCrop(id: ID!): Crop!
@@ -56,6 +57,11 @@ input UserRegistrationDto {
 input UserLoginDto {
   email: String!
   password: String!
+}
+
+input VerificationInputDto {
+  phone: String!
+  verificationCode: String!
 }
 
 input CreateCropDto {

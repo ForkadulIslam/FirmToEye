@@ -4,6 +4,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
@@ -86,44 +87,85 @@ export class AuthService {
     return null;
   }
 
-  async validateOtp(phone: string, otp: string): Promise<any> {
+  async validateOtp(phone: string, otp: string): Promise<string> {
     const userVerification = await this.prisma.phoneVerification.findFirst({
-      where: { phone }
+      where: { phone: phone }
     });
-    if (userVerification && await bcrypt.compare(otp, userVerification.verificationCode)) {
-      return userVerification;
+    if (!userVerification) {
+      throw new NotFoundException('No valid verification found for this phone number');
     }
-    if (userVerification.userId === undefined || userVerification.userId === null) {
-        return "User not found"
+    if (otp !== userVerification.verificationCode) {
+      throw new UnauthorizedException('Invalid OTP');
     }
-    else {
-      return "User already Exists"
+    if (userVerification.verificationExpiry < new Date()) {
+      throw new UnauthorizedException('OTP has expired');
     }
+    if (!userVerification.userId) {
+      throw new NotFoundException('User not found');
+    }
+    return 'OTP verified successfully';
   }
-
+  
 
 
   async sendOtp(inputData: { phone: string }) {
     const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
   
-    const user = await this.prisma.phoneVerification.create({
-      data: {
-        phone: inputData.phone,
-        verificationCode: generateSecureOTP(),
-        verificationExpiry: verificationExpiry,
-        user: {
-          connect: {
-            phone: inputData.phone
-          }
-        }
-      },
-    });
+    return this.prisma.$transaction(async (prisma) => {
+      // Step 1: Find or create the user
+      let user = await prisma.user.findUnique({
+        where: { phone: inputData.phone },
+      });
   
-    return user;
+      if (!user) {
+        const tempUsername = `user_${Math.random().toString(36).substr(2, 9)}`;
+        const tempEmail = `${tempUsername}@example.com`;
+        const tempPassword = Math.random().toString(36).substr(2, 15);
+  
+        user = await prisma.user.create({
+          data: {
+            phone: inputData.phone,
+            userName: tempUsername,
+            email: tempEmail,
+            password: tempPassword,
+          },
+        });
+      }
+  
+      let phoneVerification = await prisma.phoneVerification.findUnique({
+        where: { phone: inputData.phone },
+      });
+  
+      if (phoneVerification) {
+        // If the record exists, update it
+        phoneVerification = await prisma.phoneVerification.update({
+          where: { phone: inputData.phone },
+          data: {
+            verificationCode: generateSecureOTP(),
+            verificationExpiry: verificationExpiry,
+          },
+          include: { user: true },
+        });
+      } else {
+        phoneVerification = await prisma.phoneVerification.create({
+          data: {
+            phone: inputData.phone,
+            verificationCode: generateSecureOTP(),
+            verificationExpiry: verificationExpiry,
+            user: {
+              connect: { id: user.id }
+            }
+          },
+          include: { user: true },
+        });
+      }
+  
+      return phoneVerification;
+    });
   }
   
+ 
 }
-
 function generateSecureOTP() {
   const characters = '0123456789';
   let otp = '';

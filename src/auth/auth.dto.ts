@@ -1,4 +1,4 @@
-import { Field, ObjectType, ID } from '@nestjs/graphql';
+import { Field, ObjectType, ID, InputType } from '@nestjs/graphql';
 
 @ObjectType()
 export class AuthDto {
@@ -24,13 +24,25 @@ export class SessionDto {
   lastSeen: Date;
 }
 
-@ObjectType()
-export class VerificationDto {
+@InputType()
+export class VerificationInputDto {
   @Field()
   phone: string;
 
   @Field()
   verificationCode: string;
+}
+
+@ObjectType()
+export class VerificationOutputDto {
+  @Field()
+  phone: string;
+
+  @Field()
+  verificationCode: string;
+
+  @Field()
+  message: string;
 }
 
 
@@ -42,7 +54,7 @@ export class sendOtp {
 }
 
 @ObjectType()
-export class dummyloginDto {
+export class dummylogin {
   @Field()
   name: String;
 

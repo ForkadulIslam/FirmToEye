@@ -1,9 +1,10 @@
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
-import { AuthDto, VerificationDto, sendOtp, dummyloginDto } from './auth.dto'; 
+import { AuthDto, VerificationOutputDto, sendOtp, dummylogin, VerificationInputDto } from './auth.dto'; 
 import { UserRegistrationDto } from './register.dto';
 import { UserLoginDto } from './login-institution.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UnauthorizedException } from '@nestjs/common';
 
 @Resolver()
 export class AuthResolver {
@@ -30,27 +31,28 @@ export class AuthResolver {
     return this.authService.login(user);
   }
 
-  // @Mutation(() => VerificationDto)
-  // async otpVerifitcaion(
-  //   @Args('verifitcaiondto') verifitcaiondto: VerificationDto,
-  // ): Promise<AuthDto> {
-  //   const user = await this.authService.validateOtp(verifitcaiondto.phone, verifitcaiondto.verificationCode);
-  //   if (!user) {
-  //     throw new Error('Otp Is Not Valid');
-  //   }
-  //   return this.authService.login(user);
-  // }
+  @Mutation(() => String) 
+  async otpVerification(
+    @Args('VerificationInputDto') VerificationInputDto: VerificationInputDto,
+  ): Promise<string> {
+    try {
+      const message = await this.authService.validateOtp(VerificationInputDto.phone, VerificationInputDto.verificationCode);
+      return message;
+    } catch (error) {
+      throw new UnauthorizedException(error.message || 'An error occurred during OTP verification');
+    }
+  }
 
   @Mutation(() => sendOtp)
   async sendOtp(@Args('phone') phone: string): Promise<sendOtp> {
-    const user = await this.authService.sendOtp({ phone });
+    const user = await this.authService.sendOtp( { phone });
     if (!user) {
       throw new Error('Otp sending failed');
     }
     return ({  phone: 'Otp sent' });
   }
   
-  @Mutation(() => dummyloginDto)
+  @Mutation(() => dummylogin)
   async dummyLogin() {
     const payload = { id: 1 , name: "numaan" , password : "numaan"};
     // if (dummyloginDto.name === "numaan" && dummyloginDto.password === "numaan") {
