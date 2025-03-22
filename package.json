@@ -32,7 +32,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.4.0",
     "@nestjs/typeorm": "^10.0.2",
-    "@prisma/client": "^5.15.1",
+    "@prisma/client": "^5.17.0",
     "@types/axios": "^0.14.0",
     "apollo-server-express": "^3.13.0",
     "axios": "^1.7.2",
